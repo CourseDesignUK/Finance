@@ -16,6 +16,8 @@
         .tab.active { background: #7DA67D; color: white; }
         .cat-badge { font-size: 9px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; font-weight: bold; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .progress-bar { height: 6px; border-radius: 3px; background: #E5E2D9; overflow: hidden; }
+        .progress-fill { height: 100%; background: #7DA67D; transition: width 0.5s ease; }
     </style>
 </head>
 <body class="p-4 font-sans text-slate-800">
@@ -31,15 +33,22 @@
         </header>
 
         <div class="card p-4 mb-6 shadow-sm">
-            <canvas id="spendChart" style="max-height: 200px;"></canvas>
+            <canvas id="spendChart" style="max-height: 180px; margin-bottom: 15px;"></canvas>
+            <div class="px-2">
+                <div class="flex justify-between text-[10px] uppercase font-bold text-stone-400 mb-1">
+                    <span>Monthly Budget Usage</span>
+                    <span id="budget-percent">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div id="budget-fill" class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
         </div>
 
-        <div id="account-grid" class="grid grid-cols-2 gap-2 mb-6 text-center text-stone-700">
-            </div>
+        <div id="account-grid" class="grid grid-cols-2 gap-2 mb-6 text-center text-stone-700"></div>
 
         <div class="card p-5 mb-6 shadow-sm">
-            <div class="flex gap-2 overflow-x-auto pb-3 mb-3 no-scrollbar" id="cat-selector">
-                </div>
+            <div class="flex gap-2 overflow-x-auto pb-3 mb-3 no-scrollbar" id="cat-selector"></div>
             
             <div class="space-y-3">
                 <div class="flex bg-stone-100 p-1 rounded-xl">
@@ -47,7 +56,7 @@
                     <button onclick="setType('in')" id="tgl-in" class="flex-1 py-2 rounded-lg text-xs font-bold transition text-stone-400">INCOME</button>
                 </div>
 
-                <input id="desc" type="text" placeholder="Description (e.g. Rent)" class="w-full bg-stone-50 p-3 rounded-xl outline-none border border-stone-100 focus:border-green-300">
+                <input id="desc" type="text" placeholder="Description" class="w-full bg-stone-50 p-3 rounded-xl outline-none border border-stone-100 focus:border-green-300">
                 <div class="flex gap-2">
                     <input id="amt" type="number" inputmode="decimal" placeholder="0.00" class="w-full bg-stone-50 p-3 rounded-xl outline-none border border-stone-100 text-lg">
                     <button onclick="addEntry()" id="add-btn" class="btn-primary px-6 font-bold shadow-md active:scale-95 transition">Add</button>
@@ -71,7 +80,7 @@
 
         const CONFIG = {
             categories: ['Housing', 'Transport', 'Food', 'Ent', 'Savings', 'Misc'],
-            // Starting balances (hardcoded as per your initial request, but dynamic in calculation)
+            monthlyBudget: 2000, // Change this to your monthly goal
             base: { savings: 40606, pension: 37122, debt: -16107 }
         };
 
@@ -113,7 +122,6 @@
             let totalOut = 0;
             const catTotals = {};
 
-            // Calculate totals
             data.forEach(e => {
                 const val = parseFloat(e.amt);
                 if(e.type === 'in') {
@@ -129,6 +137,12 @@
             document.getElementById('net-worth').innerText = `£${netVal.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
             document.getElementById('stat-in').innerText = `IN: £${totalIn.toLocaleString()}`;
             document.getElementById('stat-out').innerText = `OUT: £${totalOut.toLocaleString()}`;
+
+            // Update Budget Progress
+            const budgetPercent = Math.min((totalOut / CONFIG.monthlyBudget) * 100, 100);
+            document.getElementById('budget-fill').style.width = budgetPercent + '%';
+            document.getElementById('budget-percent').innerText = Math.round(budgetPercent) + '%';
+            document.getElementById('budget-fill').style.backgroundColor = budgetPercent > 90 ? '#A67D7D' : '#7DA67D';
 
             grid.innerHTML = `
                 <div class="card p-3"><p class="text-[9px] uppercase text-stone-400">Savings</p><p class="text-sm font-bold">£${CONFIG.base.savings.toLocaleString()}</p></div>
@@ -159,6 +173,7 @@
             const values = Object.values(catTotals);
 
             if (chartInstance) chartInstance.destroy();
+            if (labels.length === 0) return; // Don't render if empty
             
             chartInstance = new Chart(ctx, {
                 type: 'doughnut',
@@ -171,10 +186,11 @@
                     }]
                 },
                 options: {
+                    maintainAspectRatio: false,
                     plugins: { 
-                        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } } 
+                        legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 } } } 
                     },
-                    cutout: '70%'
+                    cutout: '75%'
                 }
             });
         }
@@ -185,13 +201,7 @@
             if(!desc || !amt) return;
 
             const data = await localforage.getItem('finance_v2') || [];
-            data.push({ 
-                desc, 
-                amt: Math.abs(parseFloat(amt)), 
-                cat: currentCat, 
-                type: currentType,
-                date: new Date().toISOString() 
-            });
+            data.push({ desc, amt: Math.abs(parseFloat(amt)), cat: currentCat, type: currentType, date: new Date().toISOString() });
             await localforage.setItem('finance_v2', data);
             
             document.getElementById('desc').value = '';
@@ -208,24 +218,14 @@
 
         async function exportCSV() {
             const data = await localforage.getItem('finance_v2') || [];
-            let csv = "Date,Type,Category,Description,Amount\n" + 
-                data.map(e => `${e.date},${e.type},${e.cat},${e.desc},${e.amt}`).join("\n");
+            let csv = "Date,Type,Category,Description,Amount\n" + data.map(e => `${e.date},${e.type},${e.cat},${e.desc},${e.amt}`).join("\n");
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `finance_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
+            const a = document.createElement('a'); a.href = url; a.download = `finance_export.csv`; a.click();
         }
 
-        async function resetData() { 
-            if(confirm("Are you sure? This deletes everything.")) { 
-                await localforage.clear(); 
-                load(); 
-            } 
-        }
+        async function resetData() { if(confirm("Wipe all data?")) { await localforage.clear(); load(); } }
 
-        // Initialize
         renderTabs();
         load();
     </script>
