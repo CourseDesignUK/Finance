@@ -2,32 +2,109 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Finance</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mindful Finance</title>
     <link rel="manifest" href="manifest.json">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #F9F7F2; -webkit-tap-highlight-color: transparent; }
+        .card { background-color: #FFFFFF; border-radius: 24px; }
+        .btn-primary { background-color: #7DA67D; color: white; border-radius: 16px; }
+        .btn-secondary { background-color: #E8F0E8; color: #4A634A; border-radius: 12px; }
+        .accent-text { color: #5B7A5B; }
+        .account-pill { border: 1px solid #E5E7EB; border-radius: 99px; padding: 6px 14px; font-size: 0.75rem; transition: all 0.2s; cursor: pointer; }
+        .account-pill.active { background-color: #7DA67D; color: white; border-color: #7DA67D; }
+    </style>
 </head>
-<body class="bg-gray-100 p-4">
-    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md p-6">
-        <h1 class="text-2xl font-bold mb-4">💰 Local Tracker</h1>
+<body class="p-6 font-sans text-slate-800">
+    <div class="max-w-md mx-auto">
         
-        <div class="mb-4">
-            <input id="desc" type="text" placeholder="Description" class="w-full border p-2 rounded mb-2">
-            <input id="amt" type="number" placeholder="Amount" class="w-full border p-2 rounded mb-2">
-            <button onclick="addEntry()" class="w-full bg-blue-500 text-white p-2 rounded">Add Entry</button>
+        <header class="mb-8 text-center">
+            <h1 class="text-xs uppercase tracking-[0.2em] text-slate-400 font-bold mb-2">Net Worth</h1>
+            <div id="net-worth" class="text-5xl font-light accent-text">$0.00</div>
+        </header>
+
+        <div id="account-grid" class="grid grid-cols-2 gap-3 mb-8">
+            </div>
+
+        <div class="card shadow-sm p-6 mb-8 border border-stone-100">
+            <div class="space-y-4">
+                <div id="account-selector" class="flex flex-wrap gap-2 mb-2">
+                    <div class="account-pill active" onclick="selectAcc('Income')">Income</div>
+                    <div class="account-pill" onclick="selectAcc('Savings')">Savings</div>
+                    <div class="account-pill" onclick="selectAcc('Investments')">Investments</div>
+                    <div class="account-pill" onclick="selectAcc('Pension')">Pension</div>
+                    <div class="account-pill" onclick="selectAcc('SIPP')">SIPP</div>
+                </div>
+                <input id="desc" type="text" placeholder="Entry name..." class="w-full bg-stone-50 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-200">
+                <input id="amt" type="number" inputmode="decimal" placeholder="0.00" class="w-full bg-stone-50 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-green-200 text-lg font-medium">
+                <button onclick="addEntry()" class="w-full btn-primary py-4 font-bold shadow-lg shadow-green-100 active:scale-[0.98]">
+                    Record Entry
+                </button>
+            </div>
         </div>
 
-        <h2 class="font-semibold mb-2">History (Device Only)</h2>
-        <ul id="list" class="divide-y"></ul>
+        <div class="flex justify-between items-center mb-4 px-2">
+            <h2 class="font-semibold text-slate-500">History</h2>
+            <button onclick="exportToCSV()" class="btn-secondary px-4 py-2 text-xs font-bold uppercase tracking-wider">Backup</button>
+        </div>
+        
+        <ul id="list" class="space-y-3 mb-10"></ul>
+
+        <button onclick="clearAll()" class="w-full text-xs text-stone-300 uppercase tracking-widest py-4">Reset Everything</button>
     </div>
 
     <script>
-        // Initialize Storage
+        let selectedAccount = 'Income';
+        const ACCOUNTS = ['Income', 'Savings', 'Investments', 'Pension', 'SIPP'];
+
+        function selectAcc(acc) {
+            selectedAccount = acc;
+            document.querySelectorAll('.account-pill').forEach(p => {
+                p.classList.toggle('active', p.innerText === acc);
+            });
+        }
+
         async function loadData() {
             const entries = await localforage.getItem('finance_data') || [];
             const list = document.getElementById('list');
-            list.innerHTML = entries.map(e => `<li class="py-2 flex justify-between"><span>${e.desc}</span><b>$${e.amt}</b></li>`).join('');
+            const netWorthEl = document.getElementById('net-worth');
+            const gridEl = document.getElementById('account-grid');
+
+            // Calculate Totals
+            const totals = ACCOUNTS.reduce((obj, acc) => ({ ...obj, [acc]: 0 }), {});
+            entries.forEach(e => { totals[e.account] = (totals[e.account] || 0) + parseFloat(e.amt); });
+            
+            const netWorth = Object.values(totals).reduce((a, b) => a + b, 0);
+            netWorthEl.innerText = `$${netWorth.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
+            // Render Account Grid
+            gridEl.innerHTML = ACCOUNTS.map(acc => `
+                <div class="card p-4 border border-stone-50 shadow-sm">
+                    <p class="text-[10px] uppercase font-bold text-stone-400 tracking-tight">${acc}</p>
+                    <p class="text-sm font-semibold accent-text">$${totals[acc].toLocaleString()}</p>
+                </div>
+            `).join('');
+
+            // Render List
+            if (entries.length === 0) {
+                list.innerHTML = '<li class="text-center text-stone-300 py-10 italic">Empty garden...</li>';
+                return;
+            }
+
+            list.innerHTML = [...entries].reverse().map(e => `
+                <li class="flex justify-between items-center p-5 card shadow-sm border border-stone-50">
+                    <div>
+                        <p class="font-medium text-slate-700">${e.desc}</p>
+                        <div class="flex gap-2 items-center">
+                             <span class="text-[9px] px-2 py-0.5 bg-stone-100 rounded text-stone-500 uppercase font-bold">${e.account}</span>
+                             <span class="text-[10px] text-stone-400 font-medium">${new Date(e.date).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    <span class="font-semibold accent-text">+$${parseFloat(e.amt).toFixed(2)}</span>
+                </li>
+            `).join('');
         }
 
         async function addEntry() {
@@ -36,12 +113,29 @@
             if(!desc || !amt) return;
 
             const entries = await localforage.getItem('finance_data') || [];
-            entries.push({ desc, amt, date: new Date() });
+            entries.push({ desc, amt, account: selectedAccount, date: new Date().toISOString() });
             await localforage.setItem('finance_data', entries);
             
             document.getElementById('desc').value = '';
             document.getElementById('amt').value = '';
             loadData();
+        }
+
+        async function exportToCSV() {
+            const entries = await localforage.getItem('finance_data') || [];
+            if (entries.length === 0) return;
+            let csv = "Date,Account,Description,Amount\n" + 
+                      entries.map(e => `${e.date},${e.account},${e.desc},${e.amt}`).join("\n");
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `finance_backup.csv`;
+            a.click();
+        }
+
+        async function clearAll() {
+            if(confirm("Wipe all device data?")) { await localforage.clear(); loadData(); }
         }
 
         loadData();
