@@ -2,232 +2,691 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mindful Finance Pro</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Finance Vault</title>
     <style>
-        body { background-color: #F9F7F2; -webkit-tap-highlight-color: transparent; }
-        .card { background-color: #FFFFFF; border-radius: 20px; border: 1px solid #E5E2D9; }
-        .btn-primary { background-color: #7DA67D; color: white; border-radius: 14px; }
-        .accent-text { color: #5B7A5B; }
-        .tab { padding: 8px 12px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; cursor: pointer; background: #F0EEE6; color: #8A877F; white-space: nowrap; }
-        .tab.active { background: #7DA67D; color: white; }
-        .cat-badge { font-size: 9px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; font-weight: bold; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .progress-bar { height: 6px; border-radius: 3px; background: #E5E2D9; overflow: hidden; }
-        .progress-fill { height: 100%; background: #7DA67D; transition: width 0.5s ease; }
+        :root {
+            --bg: #0B0F12;
+            --card-bg: #141A1F;
+            --accent: #2E7D32;
+            --text: #E0E6ED;
+            --text-muted: #78909C;
+            --border: #232D36;
+            --danger: #D32F2F;
+            --success: #4CAF50;
+            --secondary: #1C242B;
+            
+            --color-valuable-liabilities: #E68A4A;
+            --color-freedom-fund: #D4C249;
+            --color-cash-spending: #5CAE89;
+            --color-debt: #5594D4;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container { max-width: 500px; margin: 0 auto; }
+        h1, h2, h3 { font-weight: 600; margin: 0; letter-spacing: -0.3px; }
+        h2 { font-size: 20px; }
+        .muted { color: var(--text-muted); font-size: 13px; margin-bottom: 10px; margin-top: 4px; }
+        .heading-total { font-size: 16px; font-weight: 700; color: var(--success); margin-top: 2px; }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .accordion-trigger {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .accordion-chevron {
+            font-size: 18px;
+            color: var(--text-muted);
+            transition: transform 0.2s ease;
+        }
+        .accordion-content {
+            display: none;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+        .active .accordion-chevron {
+            transform: rotate(180deg);
+        }
+        .active .accordion-content {
+            display: block;
+        }
+
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input {
+            width: 100%;
+            background: #0B0F12;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .hidden { display: none !important; }
+        .flex-space { display: flex; justify-content: space-between; align-items: center; }
+        .delete-btn {
+            background: transparent;
+            color: var(--danger);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 8px;
+        }
+        
+        .treemap-container {
+            display: flex;
+            height: 220px;
+            gap: 4px;
+            margin-bottom: 16px;
+            background: var(--bg);
+            border-radius: 8px;
+            overflow: hidden;
+            width: 100%;
+        }
+        .treemap-col {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            height: 100%;
+        }
+        .treemap-block {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 10px;
+            box-sizing: border-box;
+            font-size: 12px;
+            font-weight: 600;
+            color: #000000;
+            transition: all 0.2s ease;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .treemap-val {
+            font-size: 11px;
+            font-weight: 500;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .dynamic-account {
+            display: grid;
+            grid-template-columns: 3fr 1fr auto;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .property-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .swr-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+        .swr-value { font-size: 18px; font-weight: 700; color: var(--success); }
+        hr { border: 0; border-top: 1px solid var(--border); margin: 16px 0; }
     </style>
 </head>
-<body class="p-4 font-sans text-slate-800">
-    <div class="max-w-md mx-auto">
-        
-        <header class="mb-6 text-center pt-4">
-            <h1 class="text-[10px] uppercase tracking-[0.2em] text-stone-400 font-bold mb-1">Estimated Net worth</h1>
-            <div id="net-worth" class="text-4xl font-light accent-text">£0.00</div>
-            <div id="monthly-stats" class="flex justify-center gap-4 mt-2 text-[11px] font-bold">
-                <span id="stat-in" class="text-green-600">IN: £0.00</span>
-                <span id="stat-out" class="text-red-400">OUT: £0.00</span>
-            </div>
-        </header>
-
-        <div class="card p-4 mb-6 shadow-sm">
-            <canvas id="spendChart" style="max-height: 180px; margin-bottom: 15px;"></canvas>
-            <div class="px-2">
-                <div class="flex justify-between text-[10px] uppercase font-bold text-stone-400 mb-1">
-                    <span>Monthly Budget Usage</span>
-                    <span id="budget-percent">0%</span>
-                </div>
-                <div class="progress-bar">
-                    <div id="budget-fill" class="progress-fill" style="width: 0%"></div>
-                </div>
+<body>
+    <div class="container">
+        <div class="flex-space" style="margin-bottom: 20px;">
+            <div>
+                <h1>Rebel Finance Tracker</h1>
+                <p class="muted">by XRTraininglabs 2026</p>
             </div>
         </div>
 
-        <div id="account-grid" class="grid grid-cols-2 gap-2 mb-6 text-center text-stone-700"></div>
+        <div class="treemap-container">
+            <div id="tm-valuable-liabilities" class="treemap-block" style="background: var(--color-valuable-liabilities); height: 100%;">
+                <div>Valuable liabilities</div>
+                <div id="v-liab-label" class="treemap-val">£0</div>
+            </div>
+            <div id="tm-mid-col" class="treemap-col">
+                <div id="tm-freedom-fund" class="treemap-block" style="background: var(--color-freedom-fund);">
+                    <div>Freedom fund</div>
+                    <div id="v-free-label" class="treemap-val">£0</div>
+                </div>
+                <div id="tm-cash-spending" class="treemap-block" style="background: var(--color-cash-spending);">
+                    <div>Cash & spending</div>
+                    <div id="v-cash-label" class="treemap-val">£0</div>
+                </div>
+            </div>
+            <div id="tm-debt" class="treemap-block" style="background: var(--color-debt); height: 100%;">
+                <div>Debt</div>
+                <div id="v-debt-label" class="treemap-val">£0</div>
+            </div>
+        </div>
 
-        <div class="card p-5 mb-6 shadow-sm">
-            <div class="flex gap-2 overflow-x-auto pb-3 mb-3 no-scrollbar" id="cat-selector"></div>
+        <div class="card" style="background: var(--secondary); border: 1px solid var(--border);">
+            <div class="flex-space">
+                <span style="font-size: 18px; font-weight: 600;">Total Net Worth</span>
+                <span id="net-worth-display" style="font-size: 24px; font-weight: 700; color: var(--success);">£0</span>
+            </div>
+            <div class="flex-space" style="margin-top: 8px; font-size: 14px; color: var(--text-muted);">
+                <span>Freedom Fund Value (Combined):</span>
+                <span id="freedom-fund-total-display" style="color: var(--text); font-weight: 600;">£0</span>
+            </div>
             
-            <div class="space-y-3">
-                <div class="flex bg-stone-100 p-1 rounded-xl">
-                    <button onclick="setType('out')" id="tgl-out" class="flex-1 py-2 rounded-lg text-xs font-bold transition bg-white shadow-sm text-red-500">EXPENSE</button>
-                    <button onclick="setType('in')" id="tgl-in" class="flex-1 py-2 rounded-lg text-xs font-bold transition text-stone-400">INCOME</button>
+            <div class="swr-box">
+                <div>
+                    <label>4% SWR Projections</label>
+                    <div id="swr-four" class="swr-value">£0</div>
                 </div>
-
-                <input id="desc" type="text" placeholder="Description" class="w-full bg-stone-50 p-3 rounded-xl outline-none border border-stone-100 focus:border-green-300">
-                <div class="flex gap-2">
-                    <input id="amt" type="number" inputmode="decimal" placeholder="0.00" class="w-full bg-stone-50 p-3 rounded-xl outline-none border border-stone-100 text-lg">
-                    <button onclick="addEntry()" id="add-btn" class="btn-primary px-6 font-bold shadow-md active:scale-95 transition">Add</button>
+                <div>
+                    <label>3.5% SWR Projections</label>
+                    <div id="swr-three" class="swr-value">£0</div>
                 </div>
             </div>
         </div>
 
-        <div class="flex justify-between items-center mb-3 px-1">
-            <h2 class="text-sm font-bold text-stone-500 uppercase tracking-tight">Recent Activity</h2>
-            <button onclick="exportCSV()" class="text-[10px] font-bold text-stone-400 border border-stone-200 px-3 py-1 rounded-full uppercase">CSV</button>
-        </div>
-        <ul id="list" class="space-y-2 pb-10"></ul>
+        <div class="card accordion-section" id="sec-freedom">
+            <div class="accordion-trigger" onclick="toggleAccordion('sec-freedom')">
+                <div>
+                    <h2>1. Freedom Fund</h2>
+                    <div id="total-freedom-fund-heading" class="heading-total">Total: £0</div>
+                </div>
+                <div class="accordion-chevron">▾</div>
+            </div>
+            <div class="accordion-content">
+                <p class="muted">Actual investments earning passive income (stocks, ISAs, pensions, properties)</p>
+                
+                <h3 style="color: var(--text-muted); font-size: 14px; margin-top: 12px;">Manual Accounts & Asset Pots (ISA, SIPP, Alternative)</h3>
+                <div id="freedom-accounts-list"></div>
+                <button onclick="addFreedomAccountItem()" style="background: var(--secondary); color: var(--text); font-size: 13px; padding: 8px; margin-top: 4px; margin-bottom: 16px; border: 1px solid var(--border);">+ Add Account Allocation</button>
 
-        <button onclick="resetData()" class="w-full text-[10px] text-stone-300 py-4 uppercase tracking-widest">Wipe All Data</button>
+                <h3 style="color: var(--text-muted); font-size: 14px;">Defined Benefit Pensions (Guaranteed Annual Streams)</h3>
+                <div id="defined-benefits-list"></div>
+                <button onclick="addDefinedBenefitItem()" style="background: var(--secondary); color: var(--text); font-size: 13px; padding: 8px; margin-top: 4px; border: 1px solid var(--border);">+ Add Defined Benefit Stream</button>
+            </div>
+        </div>
+
+        <div class="card accordion-section" id="sec-liabilities">
+            <div class="accordion-trigger" onclick="toggleAccordion('sec-liabilities')">
+                <div>
+                    <h2>2. Valuable Liabilities</h2>
+                    <div id="total-valuable-liabilities-heading" class="heading-total">Total Equity: £0</div>
+                </div>
+                <div class="accordion-chevron">▾</div>
+            </div>
+            <div class="accordion-content">
+                <p class="muted">Primary residence and property assets value paired against outstanding home loan matrices</p>
+                <div id="valuable-liabilities-list"></div>
+                <button onclick="addValuableLiabilityItem()" style="background: var(--secondary); color: var(--text); font-size: 13px; padding: 8px; margin-top: 4px; border: 1px solid var(--border);">+ Add Property / Asset Liability</button>
+            </div>
+        </div>
+
+        <div class="card accordion-section" id="sec-cash">
+            <div class="accordion-trigger" onclick="toggleAccordion('sec-cash')">
+                <div>
+                    <h2>3. Cash & Planned Spending</h2>
+                    <div id="total-cash-spending-heading" class="heading-total">Total: £0</div>
+                </div>
+                <div class="accordion-chevron">▾</div>
+            </div>
+            <div class="accordion-content">
+                <p class="muted">Readily available banking balances and emergency funds</p>
+                <div id="cash-accounts-list"></div>
+                <button onclick="addCashAccountItem()" style="background: var(--secondary); color: var(--text); font-size: 13px; padding: 8px; margin-top: 8px; border: 1px solid var(--border);">+ Add Cash Pot</button>
+            </div>
+        </div>
+
+        <div class="card accordion-section" id="sec-debts">
+            <div class="accordion-trigger" onclick="toggleAccordion('sec-debts')">
+                <div>
+                    <h2>4. Debts</h2>
+                    <div id="total-debts-heading" class="heading-total" style="color: var(--danger);">Total: £0</div>
+                </div>
+                <div class="accordion-chevron">▾</div>
+            </div>
+            <div class="accordion-content">
+                <p class="muted">Outstanding non-mortgage liabilities (loans, short-term lines, credit cards)</p>
+                <div id="debts-list"></div>
+                <button onclick="addDebtItem()" style="background: var(--secondary); color: var(--text); font-size: 13px; padding: 8px; margin-top: 8px; border: 1px solid var(--border);">+ Add Outstanding Debt</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>System Storage & Controls</h2>
+            <p class="muted">Manage plaintext local data or generate backups.</p>
+            <div class="btn-grid">
+                <button class="btn-secondary" onclick="exportBackup()">Export Backup File</button>
+                <button class="btn-secondary" onclick="document.getElementById('restore-file').click()">Import Backup File</button>
+                <input type="file" id="restore-file" accept=".json" style="display:none;" onchange="importBackup(this)">
+            </div>
+        </div>
     </div>
 
     <script>
-        let currentCat = 'Misc';
-        let currentType = 'out';
-        let chartInstance = null;
-
-        const CONFIG = {
-            categories: ['Housing', 'Transport', 'Food', 'Ent', 'Savings', 'Misc'],
-            monthlyBudget: 2000, // Change this to your monthly goal
-            base: { savings: 40606, pension: 37122, debt: -16107 }
+        let appData = { 
+            freedomAccounts: [],
+            definedBenefits: [],
+            valuableLiabilities: [],
+            cashAccounts: [],
+            debts: []
         };
 
-        function setCat(cat) {
-            currentCat = cat;
-            renderTabs();
+        const STORAGE_KEY = "finance_vault_plaintext_data";
+
+        function toggleAccordion(sectionId) {
+            document.getElementById(sectionId).classList.toggle('active');
         }
 
-        function setType(type) {
-            currentType = type;
-            const btnIn = document.getElementById('tgl-in');
-            const btnOut = document.getElementById('tgl-out');
-            const addBtn = document.getElementById('add-btn');
+        function initVault() {
+            const storedData = localStorage.getItem(STORAGE_KEY);
+            if (storedData) {
+                try {
+                    appData = JSON.parse(storedData);
+                    if (!appData.freedomAccounts) appData.freedomAccounts = [];
+                    if (!appData.definedBenefits) appData.definedBenefits = [];
+                    if (!appData.valuableLiabilities) {
+                        appData.valuableLiabilities = [];
+                        if (appData.propertyValue !== undefined || appData.propertyMortgage !== undefined) {
+                            appData.valuableLiabilities.push({
+                                name: "Primary Residence",
+                                value: parseFloat(appData.propertyValue) || 0,
+                                mortgage: parseFloat(appData.propertyMortgage) || 0
+                            });
+                            delete appData.propertyValue;
+                            delete appData.propertyMortgage;
+                        }
+                    }
+                    if (!appData.cashAccounts) appData.cashAccounts = [];
+                    if (!appData.debts) appData.debts = [];
+                } catch (e) {
+                    console.error("Storage structural error. Rebuilding context.");
+                }
+            }
+            populateUI();
+        }
 
-            if(type === 'in') {
-                btnIn.className = "flex-1 py-2 rounded-lg text-xs font-bold transition bg-white shadow-sm text-green-600";
-                btnOut.className = "flex-1 py-2 rounded-lg text-xs font-bold transition text-stone-400";
-                addBtn.style.backgroundColor = "#7DA67D";
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        }
+
+        function populateUI() {
+            renderFreedomAccounts();
+            renderDefinedBenefits();
+            renderValuableLiabilities();
+            renderCashAccounts();
+            renderDebts();
+            calculateTotals();
+        }
+
+        function formatVal(val) {
+            return "£" + Math.round(val).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        }
+
+        function renderFreedomAccounts() {
+            const container = document.getElementById("freedom-accounts-list");
+            container.innerHTML = "";
+            if (appData.freedomAccounts.length === 0) {
+                container.innerHTML = `<p class="muted" style="text-align:center; padding: 5px 0;">No active portfolio components added.</p>`;
+                return;
+            }
+            const header = document.createElement("div");
+            header.className = "dynamic-account";
+            header.innerHTML = "<label>Account/Asset Description</label><label>Balance (£)</label><div></div>";
+            container.appendChild(header);
+
+            appData.freedomAccounts.forEach((item, index) => {
+                const row = document.createElement("div");
+                row.className = "dynamic-account";
+                row.innerHTML = `
+                    <input type="text" value="${item.name}" placeholder="e.g. Vanguard ISA" oninput="updateFreedomAccountItem(${index}, 'name', this.value)">
+                    <input type="number" value="${item.balance}" step="1" placeholder="0" oninput="updateFreedomAccountItem(${index}, 'balance', this.value)">
+                    <button class="delete-btn" onclick="deleteFreedomAccountItem(${index})">✕</button>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function addFreedomAccountItem() {
+            appData.freedomAccounts.push({ name: "", balance: 0 });
+            renderFreedomAccounts();
+            saveData();
+        }
+
+        function updateFreedomAccountItem(index, key, value) {
+            appData.freedomAccounts[index][key] = (key === 'name') ? value : (Math.round(parseFloat(value)) || 0);
+            calculateTotals();
+            saveData();
+        }
+
+        function deleteFreedomAccountItem(index) {
+            appData.freedomAccounts.splice(index, 1);
+            renderFreedomAccounts();
+            calculateTotals();
+            saveData();
+        }
+
+        function renderDefinedBenefits() {
+            const container = document.getElementById("defined-benefits-list");
+            container.innerHTML = "";
+            if (appData.definedBenefits.length === 0) {
+                container.innerHTML = `<p class="muted" style="text-align:center; padding: 5px 0;">No guaranteed pension streams tracked.</p>`;
+                return;
+            }
+            const header = document.createElement("div");
+            header.className = "dynamic-account";
+            header.innerHTML = "<label>Pension Scheme / Provider</label><label>Annual Payout (£)</label><div></div>";
+            container.appendChild(header);
+
+            appData.definedBenefits.forEach((item, index) => {
+                const row = document.createElement("div");
+                row.className = "dynamic-account";
+                row.innerHTML = `
+                    <input type="text" value="${item.name}" placeholder="e.g. Military Pension" oninput="updateDefinedBenefitItem(${index}, 'name', this.value)">
+                    <input type="number" value="${item.annualAmount}" step="1" placeholder="0" oninput="updateDefinedBenefitItem(${index}, 'annualAmount', this.value)">
+                    <button class="delete-btn" onclick="deleteDefinedBenefitItem(${index})">✕</button>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function addDefinedBenefitItem() {
+            appData.definedBenefits.push({ name: "", annualAmount: 0 });
+            renderDefinedBenefits();
+            saveData();
+        }
+
+        function updateDefinedBenefitItem(index, key, value) {
+            appData.definedBenefits[index][key] = (key === 'name') ? value : (Math.round(parseFloat(value)) || 0);
+            calculateTotals();
+            saveData();
+        }
+
+        function deleteDefinedBenefitItem(index) {
+            appData.definedBenefits.splice(index, 1);
+            renderDefinedBenefits();
+            calculateTotals();
+            saveData();
+        }
+
+        function renderValuableLiabilities() {
+            const container = document.getElementById("valuable-liabilities-list");
+            container.innerHTML = "";
+            if (appData.valuableLiabilities.length === 0) {
+                container.innerHTML = `<p class="muted" style="text-align:center; padding: 5px 0;">No property profiles active.</p>`;
+                return;
+            }
+            const header = document.createElement("div");
+            header.className = "property-row";
+            header.innerHTML = "<label>Asset Name</label><label>Market Value</label><label>Mortgage Owed</label><div></div>";
+            container.appendChild(header);
+
+            appData.valuableLiabilities.forEach((item, index) => {
+                const row = document.createElement("div");
+                row.className = "property-row";
+                row.innerHTML = `
+                    <input type="text" value="${item.name}" placeholder="Property Description" oninput="updateValuableLiabilityItem(${index}, 'name', this.value)">
+                    <input type="number" value="${item.value}" step="1" placeholder="0" oninput="updateValuableLiabilityItem(${index}, 'value', this.value)">
+                    <input type="number" value="${item.mortgage}" step="1" placeholder="0" oninput="updateValuableLiabilityItem(${index}, 'mortgage', this.value)">
+                    <button class="delete-btn" onclick="deleteValuableLiabilityItem(${index})">✕</button>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function addValuableLiabilityItem() {
+            appData.valuableLiabilities.push({ name: "", value: 0, mortgage: 0 });
+            renderValuableLiabilities();
+            saveData();
+        }
+
+        function updateValuableLiabilityItem(index, key, value) {
+            appData.valuableLiabilities[index][key] = (key === 'name') ? value : (Math.round(parseFloat(value)) || 0);
+            calculateTotals();
+            saveData();
+        }
+
+        function deleteValuableLiabilityItem(index) {
+            appData.valuableLiabilities.splice(index, 1);
+            renderValuableLiabilities();
+            calculateTotals();
+            saveData();
+        }
+
+        function renderCashAccounts() {
+            const container = document.getElementById("cash-accounts-list");
+            container.innerHTML = "";
+            if (appData.cashAccounts.length === 0) {
+                container.innerHTML = `<p class="muted" style="text-align:center; padding: 5px 0;">No liquid cash allocations found.</p>`;
+                return;
+            }
+            const header = document.createElement("div");
+            header.className = "dynamic-account";
+            header.innerHTML = "<label>Account/Pot Name</label><label>Balance (£)</label><div></div>";
+            container.appendChild(header);
+
+            appData.cashAccounts.forEach((item, index) => {
+                const row = document.createElement("div");
+                row.className = "dynamic-account";
+                row.innerHTML = `
+                    <input type="text" value="${item.name}" placeholder="e.g. Emergency Cash" oninput="updateCashAccountItem(${index}, 'name', this.value)">
+                    <input type="number" value="${item.balance}" step="1" placeholder="0" oninput="updateCashAccountItem(${index}, 'balance', this.value)">
+                    <button class="delete-btn" onclick="deleteCashAccountItem(${index})">✕</button>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function addCashAccountItem() {
+            appData.cashAccounts.push({ name: "", balance: 0 });
+            renderCashAccounts();
+            saveData();
+        }
+
+        function updateCashAccountItem(index, key, value) {
+            appData.cashAccounts[index][key] = (key === 'name') ? value : (Math.round(parseFloat(value)) || 0);
+            calculateTotals();
+            saveData();
+        }
+
+        function deleteCashAccountItem(index) {
+            appData.cashAccounts.splice(index, 1);
+            renderCashAccounts();
+            calculateTotals();
+            saveData();
+        }
+
+        function renderDebts() {
+            const container = document.getElementById("debts-list");
+            container.innerHTML = "";
+            if (appData.debts.length === 0) {
+                container.innerHTML = `<p class="muted" style="text-align:center; padding: 5px 0;">No active debt tracked.</p>`;
+                return;
+            }
+            const header = document.createElement("div");
+            header.className = "dynamic-account";
+            header.innerHTML = "<label>Debt/Liability Description</label><label>Owed (£)</label><div></div>";
+            container.appendChild(header);
+
+            appData.debts.forEach((item, index) => {
+                const row = document.createElement("div");
+                row.className = "dynamic-account";
+                row.innerHTML = `
+                    <input type="text" value="${item.name}" placeholder="e.g. Credit Card" oninput="updateDebtItem(${index}, 'name', this.value)">
+                    <input type="number" value="${item.balance}" step="1" placeholder="0" oninput="updateDebtItem(${index}, 'balance', this.value)">
+                    <button class="delete-btn" onclick="deleteDebtItem(${index})">✕</button>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function addDebtItem() {
+            appData.debts.push({ name: "", balance: 0 });
+            renderDebts();
+            saveData();
+        }
+
+        function updateDebtItem(index, key, value) {
+            appData.debts[index][key] = (key === 'name') ? value : (Math.round(parseFloat(value)) || 0);
+            calculateTotals();
+            saveData();
+        }
+
+        function deleteDebtItem(index) {
+            appData.debts.splice(index, 1);
+            renderDebts();
+            calculateTotals();
+            saveData();
+        }
+
+        function drawTreemap(freedom, equity, cash, debt) {
+            document.getElementById("v-liab-label").innerText = formatVal(equity);
+            document.getElementById("v-free-label").innerText = formatVal(freedom);
+            document.getElementById("v-cash-label").innerText = formatVal(cash);
+            document.getElementById("v-debt-label").innerText = formatVal(debt);
+
+            const blockLiab = document.getElementById("tm-valuable-liabilities");
+            const blockFree = document.getElementById("tm-freedom-fund");
+            const blockCash = document.getElementById("tm-cash-spending");
+            const blockDebt = document.getElementById("tm-debt");
+            const colMid = document.getElementById("tm-mid-col");
+
+            blockLiab.style.display = (equity === 0) ? "none" : "flex";
+            blockFree.style.display = (freedom === 0) ? "none" : "flex";
+            blockCash.style.display = (cash === 0) ? "none" : "flex";
+            blockDebt.style.display = (debt === 0) ? "none" : "flex";
+            colMid.style.display = (freedom === 0 && cash === 0) ? "none" : "flex";
+
+            const totalGross = (equity > 0 ? equity : 0) + 
+                               (freedom > 0 ? freedom : 0) + 
+                               (cash > 0 ? cash : 0) + 
+                               (debt > 0 ? debt : 0);
+
+            if (totalGross === 0) {
+                document.querySelector(".treemap-container").style.display = "none";
+                return;
             } else {
-                btnOut.className = "flex-1 py-2 rounded-lg text-xs font-bold transition bg-white shadow-sm text-red-500";
-                btnIn.className = "flex-1 py-2 rounded-lg text-xs font-bold transition text-stone-400";
-                addBtn.style.backgroundColor = "#A67D7D";
+                document.querySelector(".treemap-container").style.display = "flex";
+            }
+
+            if (equity > 0) blockLiab.style.flex = `${(equity / totalGross) * 100}%`;
+            if (debt > 0) blockDebt.style.flex = `${(debt / totalGross) * 100}%`;
+            
+            const midTotal = freedom + cash;
+            if (midTotal > 0) {
+                colMid.style.flex = `${(midTotal / totalGross) * 100}%`;
+                if (freedom > 0) blockFree.style.flex = `${(freedom / midTotal) * 100}%`;
+                if (cash > 0) blockCash.style.flex = `${(cash / midTotal) * 100}%`;
             }
         }
 
-        function renderTabs() {
-            const container = document.getElementById('cat-selector');
-            container.innerHTML = CONFIG.categories.map(c => 
-                `<div class="tab ${currentCat === c ? 'active' : ''}" onclick="setCat('${c}')">${c}</div>`
-            ).join('');
+        function calculateTotals() {
+            const manualAccountsTotal = appData.freedomAccounts.reduce((sum, item) => sum + (Math.round(parseFloat(item.balance)) || 0), 0);
+            const pensionAnnualTotal = appData.definedBenefits.reduce((sum, item) => sum + (Math.round(parseFloat(item.annualAmount)) || 0), 0);
+            const pensionCapitalizedValue = pensionAnnualTotal * 25;
+            
+            const freedomTotal = manualAccountsTotal + pensionCapitalizedValue;
+            const cashTotal = appData.cashAccounts.reduce((sum, item) => sum + (Math.round(parseFloat(item.balance)) || 0), 0);
+            const debtsTotal = appData.debts.reduce((sum, item) => sum + (Math.round(parseFloat(item.balance)) || 0), 0);
+            
+            const equityTotal = appData.valuableLiabilities.reduce((sum, item) => {
+                const value = Math.round(parseFloat(item.value)) || 0;
+                const mortgage = Math.round(parseFloat(item.mortgage)) || 0;
+                return sum + Math.max(0, value - mortgage);
+            }, 0);
+            
+            const netWorth = freedomTotal + equityTotal + cashTotal - debtsTotal;
+            
+            const annualFourPct = (manualAccountsTotal * 0.04) + pensionAnnualTotal;
+            const annualThreeHalfPct = (manualAccountsTotal * 0.035) + pensionAnnualTotal;
+
+            document.getElementById("net-worth-display").innerText = formatVal(netWorth);
+            document.getElementById("freedom-fund-total-display").innerText = formatVal(freedomTotal);
+            document.getElementById("swr-four").innerText = formatVal(annualFourPct);
+            document.getElementById("swr-three").innerText = formatVal(annualThreeHalfPct);
+
+            document.getElementById("total-freedom-fund-heading").innerText = "Total: " + formatVal(freedomTotal);
+            document.getElementById("total-valuable-liabilities-heading").innerText = "Total Equity: " + formatVal(equityTotal);
+            document.getElementById("total-cash-spending-heading").innerText = "Total: " + formatVal(cashTotal);
+            document.getElementById("total-debts-heading").innerText = "Total: " + formatVal(debtsTotal);
+
+            drawTreemap(freedomTotal, equityTotal, cashTotal, debtsTotal);
         }
 
-        async function load() {
-            const data = await localforage.getItem('finance_v2') || [];
-            const grid = document.getElementById('account-grid');
-            const list = document.getElementById('list');
-            
-            let totalIn = 0;
-            let totalOut = 0;
-            const catTotals = {};
+        function exportBackup() {
+            const dataToExport = localStorage.getItem(STORAGE_KEY);
+            if (!dataToExport) return alert("No local workspace modifications available to serialize.");
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(dataToExport);
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `finance_vault_backup_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
 
-            data.forEach(e => {
-                const val = parseFloat(e.amt);
-                if(e.type === 'in') {
-                    totalIn += val;
-                } else {
-                    totalOut += val;
-                    catTotals[e.cat] = (catTotals[e.cat] || 0) + val;
+        function importBackup(inputElement) {
+            const targetFile = inputElement.files[0];
+            if (!targetFile) return;
+            const fileReader = new FileReader();
+            fileReader.onload = function(event) {
+                try {
+                    const parsedData = JSON.parse(event.target.result);
+                    const truePayload = parsedData.payload ? parsedData.payload : parsedData;
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(truePayload));
+                    alert("Backup configurations loaded successfully.");
+                    location.reload();
+                } catch (err) {
+                    alert("Invalid JSON layout signature matrix.");
                 }
-            });
-
-            // Update UI
-            const netVal = CONFIG.base.savings + CONFIG.base.pension + CONFIG.base.debt + totalIn - totalOut;
-            document.getElementById('net-worth').innerText = `£${netVal.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-            document.getElementById('stat-in').innerText = `IN: £${totalIn.toLocaleString()}`;
-            document.getElementById('stat-out').innerText = `OUT: £${totalOut.toLocaleString()}`;
-
-            // Update Budget Progress
-            const budgetPercent = Math.min((totalOut / CONFIG.monthlyBudget) * 100, 100);
-            document.getElementById('budget-fill').style.width = budgetPercent + '%';
-            document.getElementById('budget-percent').innerText = Math.round(budgetPercent) + '%';
-            document.getElementById('budget-fill').style.backgroundColor = budgetPercent > 90 ? '#A67D7D' : '#7DA67D';
-
-            grid.innerHTML = `
-                <div class="card p-3"><p class="text-[9px] uppercase text-stone-400">Savings</p><p class="text-sm font-bold">£${CONFIG.base.savings.toLocaleString()}</p></div>
-                <div class="card p-3"><p class="text-[9px] uppercase text-stone-400">Pension</p><p class="text-sm font-bold">£${CONFIG.base.pension.toLocaleString()}</p></div>
-                <div class="card p-3"><p class="text-[9px] uppercase text-stone-400">Debt</p><p class="text-sm font-bold text-red-400">£${CONFIG.base.debt.toLocaleString()}</p></div>
-                <div class="card p-3 bg-stone-50"><p class="text-[9px] uppercase text-stone-400">Cash Flow</p><p class="text-sm font-bold ${totalIn - totalOut >= 0 ? 'text-green-600' : 'text-red-400'}">£${(totalIn - totalOut).toFixed(0)}</p></div>
-            `;
-
-            list.innerHTML = data.slice().reverse().map((e, idx) => `
-                <li class="flex justify-between items-center p-4 card shadow-sm">
-                    <div>
-                        <p class="text-sm font-semibold text-stone-700">${e.desc}</p>
-                        <span class="cat-badge ${e.type === 'in' ? 'bg-green-100 text-green-700' : 'bg-stone-100 text-stone-500'}">${e.cat}</span>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-bold ${e.type === 'in' ? 'text-green-600' : 'text-stone-700'}">${e.type === 'in' ? '+' : '-'}£${parseFloat(e.amt).toFixed(2)}</p>
-                        <button onclick="deleteEntry(${data.length - 1 - idx})" class="text-[10px] text-stone-300">Delete</button>
-                    </div>
-                </li>
-            `).join('');
-
-            updateChart(catTotals);
+            };
+            fileReader.readAsText(targetFile);
         }
 
-        function updateChart(catTotals) {
-            const ctx = document.getElementById('spendChart').getContext('2d');
-            const labels = Object.keys(catTotals);
-            const values = Object.values(catTotals);
-
-            if (chartInstance) chartInstance.destroy();
-            if (labels.length === 0) return; // Don't render if empty
-            
-            chartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: ['#7DA67D', '#9DBE9D', '#C2D6C2', '#E5E2D9', '#8A877F', '#A67D7D'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 } } } 
-                    },
-                    cutout: '75%'
-                }
-            });
-        }
-
-        async function addEntry() {
-            const desc = document.getElementById('desc').value;
-            const amt = document.getElementById('amt').value;
-            if(!desc || !amt) return;
-
-            const data = await localforage.getItem('finance_v2') || [];
-            data.push({ desc, amt: Math.abs(parseFloat(amt)), cat: currentCat, type: currentType, date: new Date().toISOString() });
-            await localforage.setItem('finance_v2', data);
-            
-            document.getElementById('desc').value = '';
-            document.getElementById('amt').value = '';
-            load();
-        }
-
-        async function deleteEntry(idx) {
-            const data = await localforage.getItem('finance_v2') || [];
-            data.splice(idx, 1);
-            await localforage.setItem('finance_v2', data);
-            load();
-        }
-
-        async function exportCSV() {
-            const data = await localforage.getItem('finance_v2') || [];
-            let csv = "Date,Type,Category,Description,Amount\n" + data.map(e => `${e.date},${e.type},${e.cat},${e.desc},${e.amt}`).join("\n");
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `finance_export.csv`; a.click();
-        }
-
-        async function resetData() { if(confirm("Wipe all data?")) { await localforage.clear(); load(); } }
-
-        renderTabs();
-        load();
+        window.onload = initVault;
     </script>
 </body>
 </html>
