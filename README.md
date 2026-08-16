@@ -25,10 +25,10 @@ To make it a webapp - clink link below on phone to load site - then 'share' and 
 
 https://coursedesignuk.github.io/Finance/
 
-Buy me a coffee if this is useful!
+If you found this useful and would like to help me out please click below.
 
 https://buymeacoffee.com/neil.gibson
 
 
 Terms and conditions: https://github.com/CourseDesignUK/Finance/blob/main/Terms%20and%20Conditions
-Privacy Policy: 
+Privacy Policy: https://github.com/CourseDesignUK/Finance/blob/main/Privacy%20Policy
