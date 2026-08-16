@@ -1,0 +1,19 @@
+TERMS AND CONDITIONS
+
+1. Operational Architecture
+This application functions strictly as a client-side utility. It utilizes local browser storage (localStorage) exclusively. It provides zero synchronization, external backup, or network transmission capabilities.
+
+2. Data Responsibility and Loss
+The user assumes absolute responsibility for data integrity and retention. Complete data loss will occur upon clearing the browser cache, deleting site data, or hardware failure. The application contains zero automated recovery mechanisms.
+
+3. Security Acknowledgment
+Information retained in localStorage exists as unencrypted plain text. The application implements zero access control, authentication, or cryptographic protection. The user is solely responsible for securing the host device and browser environment against unauthorized access.
+
+4. Data Import and Export Risks
+The application permits data extraction and ingestion via CSV files. The user assumes all risk for data corruption, state failure, or calculation errors resulting from the importation of malformed, externally modified, or incompatible file structures.
+
+5. Disclaimer of Warranties
+The software is provided strictly "as is". It contains no warranty of fitness for a particular purpose. It is not certified, audited, or approved for official financial tracking, accounting, or tax compliance operations.
+
+6. Limitation of Liability
+The developer holds zero liability for direct or indirect damages resulting from the use of this software. This includes, but is not limited to, data destruction, financial miscalculation, systemic hardware issues, or compromised privacy resulting from localized data extraction.
