@@ -1,0 +1,23 @@
+PRIVACY POLICY
+
+1. Data Collection and Storage
+This application executes exclusively on the client side. All user-input data is stored locally on the host device utilizing HTML5 Web Storage (localStorage). Zero data is transmitted to external servers.
+
+2. Data Utilization
+Data is utilized strictly for local processing and rendering within the application interface. State management, calculations, and data formatting occur entirely within the local browser environment.
+
+3. Third-Party Access
+Zero data is collected, monitored, or transmitted to third-party services, analytics providers, or external databases.
+
+4. Data Export and Import
+The application supports manual CSV data export and import. The user retains absolute control over the generation, storage, and distribution of these files. The application provides no encryption or security for exported CSV data on the host file system.
+
+5. Security
+Data security is contingent entirely on the physical and operational security of the host device. Data residing in localStorage is unencrypted and accessible to any user with access to the active browser profile.
+
+6. Data Retention and Deletion
+Data persists in the local environment until explicitly cleared. Complete data deletion is executed by:
+Triggering the application's internal data reset function.
+Clearing browser site data and cache via browser settings.
+7. Policy Scope
+This policy reflects current offline, local-storage architecture. Any structural change introducing network transmission or external databases nullifies this policy.
