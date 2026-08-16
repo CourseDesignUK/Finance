@@ -21,6 +21,8 @@ Spreadsheet Backup: Download records to a CSV file or upload existing files.
 Instant Updates: Spending totals calculate immediately upon entry.
 Total Deletion: Erase all data permanently using the reset button.
 
+To make it a webapp - clink link below on phone to load site - then 'share' and add to home screen. It will then act as an app.
+
 https://coursedesignuk.github.io/Finance/
 
 Buy me a coffee if this is useful!
