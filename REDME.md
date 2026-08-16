@@ -20,3 +20,7 @@ Add Transactions: Record the date, category, and amount for expenses.
 Spreadsheet Backup: Download records to a CSV file or upload existing files.
 Instant Updates: Spending totals calculate immediately upon entry.
 Total Deletion: Erase all data permanently using the reset button.
+
+Buy me a coffee if this is useful!
+
+https://buymeacoffee.com/neil.gibson
