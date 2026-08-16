@@ -1,3 +1,9 @@
+
+
+https://github.com/user-attachments/assets/ae651ec9-b333-4333-8aa5-6100145ea5e5
+
+
+
 APP TITLE
 Simple Finance Tracker
 
