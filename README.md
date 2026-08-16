@@ -27,8 +27,7 @@ https://coursedesignuk.github.io/Finance/
 
 If you found this useful and would like to help me out please click below.
 
-
-<script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="neil.gibson" data-color="#FFDD00" data-emoji=""  data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>
+https://buymeacoffee.com/neil.gibson
 
 
 Terms and conditions: https://github.com/CourseDesignUK/Finance/blob/main/Terms%20and%20Conditions
