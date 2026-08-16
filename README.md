@@ -30,4 +30,5 @@ Buy me a coffee if this is useful!
 https://buymeacoffee.com/neil.gibson
 
 
-https://github.com/CourseDesignUK/Finance/blob/main/Terms%20and%20Conditions
+Terms and conditions: https://github.com/CourseDesignUK/Finance/blob/main/Terms%20and%20Conditions
+Privacy Policy: 
